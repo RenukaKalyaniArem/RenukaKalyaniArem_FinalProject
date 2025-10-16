@@ -9,16 +9,28 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: bd3e24b8b77d9f948bb62fde05a6c4ab, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.3204802
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: bd3e24b8b77d9f948bb62fde05a6c4ab, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.3806068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: bd3e24b8b77d9f948bb62fde05a6c4ab, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.0972
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: bd3e24b8b77d9f948bb62fde05a6c4ab, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0
+      value: 0.07266
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bd3e24b8b77d9f948bb62fde05a6c4ab, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0.21269
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bd3e24b8b77d9f948bb62fde05a6c4ab, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 0.044702
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bd3e24b8b77d9f948bb62fde05a6c4ab, type: 3}
       propertyPath: m_LocalRotation.w
@@ -124,8 +136,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 8
   torque: 20
-  deathVFX: {fileID: 4596544553357837919, guid: 8eb503696b886e04faff8fc0f480d473, type: 3}
-  deathSFX: {fileID: 8300000, guid: 1fd31868d68903d4f9e2c4a3b7ef98f3, type: 3}
+  deathParticleEffects: {fileID: 0}
+  deathSoundEffects: {fileID: 0}
+  scoreValue: 20
 --- !u!135 &5831355030661662895
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -145,8 +158,8 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 1.7835097
-  m_Center: {x: -0.32082945, y: 0.55881613, z: -0.4597696}
+  m_Radius: 1.6893665
+  m_Center: {x: -0.35197678, y: 0.47543827, z: -0.4087379}
 --- !u!1001 &5504093510957025371
 PrefabInstance:
   m_ObjectHideFlags: 0

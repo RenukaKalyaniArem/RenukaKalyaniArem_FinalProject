@@ -8,13 +8,14 @@ public class SpawnManager : MonoBehaviour
     public GameObject[] enemyPrefabs; 
     public Vector2 enemyXRange = new Vector2(20f, 300f);
     public Vector2 enemyYRange = new Vector2(10f, 50f);
-    public Vector2 enemyZRange = new Vector2(-20f, 20f);
+    public Vector2 enemyZRange = new Vector2(-50f, 50f);
     public float enemySpawnInterval = 0.5f;
 
     
     public GameObject[] powerupPrefabs; 
     public Vector2 powerupXRange = new Vector2(20f, 300f);
     public Vector2 powerupYRange = new Vector2(10f, 50f);
+    public Vector2 powerupZRange = new Vector2(-50f, 50f);
     public float powerupSpawnInterval = 2f;
 
     
@@ -69,7 +70,7 @@ public class SpawnManager : MonoBehaviour
             Vector3 pos = new Vector3(
                 Random.Range(powerupXRange.x, powerupXRange.y),
                 Random.Range(powerupYRange.x, powerupYRange.y),
-                0f
+                Random.Range(powerupZRange.x, powerupZRange.y)
             );
 
             Instantiate(prefab, pos, Quaternion.identity);

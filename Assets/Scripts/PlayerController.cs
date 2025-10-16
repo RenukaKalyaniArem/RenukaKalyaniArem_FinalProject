@@ -7,6 +7,7 @@ public class PlayerController : MonoBehaviour
 {
     public float upDownSpeed = 8f;
     public float forwardSpeed = 20f;
+    public float horizontalSpeed = 10f;
     public float rotateSpeed = 120f; // degrees per second while tilting
     public float maxTilty = 45f; // degrees
 
@@ -23,10 +24,12 @@ public class PlayerController : MonoBehaviour
 
     public AudioClip moveUpDownSound;
     public AudioClip forwardSound;
+    public AudioClip horizontalSound;
     public AudioClip rotateSound;
     public AudioClip missileSound;
     public ParticleSystem upDownParticles;
     public ParticleSystem forwardParticles;
+    public ParticleSystem horizontalParticles;
     public ParticleSystem rotateParticles;
 
     public GameObject shieldVisual; // enable/disable
@@ -86,14 +89,14 @@ public class PlayerController : MonoBehaviour
     {
         // For Up/down movement
         float vertical = 0f;
-        if (Input.GetKey(KeyCode.UpArrow)) vertical = 1f;
-        if (Input.GetKey(KeyCode.DownArrow)) vertical = -1f;
+        if (Input.GetKey(KeyCode.W)) vertical = 1f;
+        if (Input.GetKey(KeyCode.S)) vertical = -1f;
         transform.position += Vector3.up * vertical * upDownSpeed * Time.deltaTime;
 
         // For Left/right rotation (yaw around Y)
         float turn = 0f;
-        if (Input.GetKey(KeyCode.LeftArrow)) turn = -1f;
-        if (Input.GetKey(KeyCode.RightArrow)) turn = 1f;
+        if (Input.GetKey(KeyCode.A)) turn = -1f;
+        if (Input.GetKey(KeyCode.D)) turn = 1f;
 
         if (Mathf.Abs(turn) > 0.01f)
         {
@@ -112,17 +115,24 @@ public class PlayerController : MonoBehaviour
         transform.rotation = Quaternion.Euler(0f, initialYaw + currentYaw, 0f);
 
         //For Forward movement along +X, only if not rotating
-        if (!isRotating && Input.GetKey(KeyCode.W))
+        if (Input.GetKey(KeyCode.UpArrow))
         {
             transform.position += Vector3.right * forwardSpeed * Time.deltaTime;
         }
+        // For Left/Right movement along Z axis
+        float horizontal = 0f;
+        if (Input.GetKey(KeyCode.RightArrow)) horizontal = -1f;
+        if (Input.GetKey(KeyCode.LeftArrow)) horizontal = 1f;
+        transform.position += Vector3.forward * horizontal * horizontalSpeed * Time.deltaTime;
+
     }
 
     void UpdateParticleEffectsAndSoundEffects()
     {
-        bool movingUpDown = Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow);
-        bool movingForward = Input.GetKey(KeyCode.W) && !isRotating;
-        bool rotating = isRotating;
+        bool movingUpDown = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.S);
+        bool movingForward = Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W); 
+        bool movingHorizontal = Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.RightArrow);
+        bool rotating = isRotating; 
 
 
         if (upDownParticles)
@@ -130,38 +140,48 @@ public class PlayerController : MonoBehaviour
             if (movingUpDown && !upDownParticles.isPlaying) upDownParticles.Play();
             if (!movingUpDown && upDownParticles.isPlaying) upDownParticles.Stop();
         }
+
         if (forwardParticles)
         {
             if (movingForward && !forwardParticles.isPlaying) forwardParticles.Play();
             if (!movingForward && forwardParticles.isPlaying) forwardParticles.Stop();
         }
+
+        if (horizontalParticles)
+        {
+            if (movingHorizontal && !horizontalParticles.isPlaying) horizontalParticles.Play();
+            if (!movingHorizontal && horizontalParticles.isPlaying) horizontalParticles.Stop();
+        }
+
         if (rotateParticles)
         {
             if (rotating && !rotateParticles.isPlaying) rotateParticles.Play();
             if (!rotating && rotateParticles.isPlaying) rotateParticles.Stop();
         }
-
-
+  
         if (movingUpDown && moveUpDownSound != null && !audioSource.isPlaying)
             audioSource.PlayOneShot(moveUpDownSound);
-
         if (movingForward && forwardSound != null && !audioSource.isPlaying)
             audioSource.PlayOneShot(forwardSound);
-
+        if (movingHorizontal && horizontalSound != null && !audioSource.isPlaying)
+            audioSource.PlayOneShot(horizontalSound);
         if (rotating && rotateSound != null && !audioSource.isPlaying)
             audioSource.PlayOneShot(rotateSound);
     }
 
 
+
     void ClampPosition()
     {
+
         Vector3 p = transform.position;
-        p.x = Mathf.Clamp(p.x, xRange.x, xRange.y);
-        p.y = Mathf.Clamp(p.y, yRange.x, yRange.y);
+        p.x = Mathf.Clamp(p.x, xRange.x, xRange.y); 
+        p.y = Mathf.Clamp(p.y, yRange.x, yRange.y); 
+        p.z = Mathf.Clamp(p.z, -50f, 50f);         
         transform.position = p;
+
+
     }
-
-
     void FireMissile()
     {
         if (missilePrefab == null || missileSpawnPoints.Length == 0) return;

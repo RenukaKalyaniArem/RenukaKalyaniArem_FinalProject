@@ -9,7 +9,7 @@ public class GameManager : MonoBehaviour
     public int score; 
     public string firstLevelSceneName = "Level1";
     public UIManager ui; 
-    bool isPaused = false;
+    public bool isPaused = false;
 
     void Awake()
     {

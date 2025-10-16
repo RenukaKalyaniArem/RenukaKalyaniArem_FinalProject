@@ -24,6 +24,7 @@ public class UIManager : MonoBehaviour
     public GameObject completePanel;
     public TMP_Text completeMessageText;
     public Button playFromLevel1Button;
+    public TMP_Text totalScoreText; 
 
     void Start()
     {
@@ -77,6 +78,7 @@ public class UIManager : MonoBehaviour
     public void ShowAllComplete(string msg)
     {
         if (completeMessageText) completeMessageText.text = msg;
+        if (totalScoreText) totalScoreText.text = "Total Score: " + GameManager.Instance.score;
         if (completePanel) completePanel.SetActive(true);
         if (hudPanel) hudPanel.SetActive(false);
     }
