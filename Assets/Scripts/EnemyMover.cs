@@ -7,26 +7,26 @@ public class EnemyMover : MonoBehaviour
     public ParticleSystem deathParticleEffects;
     public AudioClip deathSoundEffects;
 
+      public int scoreValue = 10; 
 
     Rigidbody rb;
+
     void Awake()
     {
-    rb = GetComponent<Rigidbody>();
+        rb = GetComponent<Rigidbody>();
     }
-
 
     void Update()
     {
-    // move left along -X axis
-    transform.position += Vector3.left * speed * Time.deltaTime;
-    transform.Rotate(Vector3.up * torque * Time.deltaTime);
-    if (transform.position.x < 1f) Destroy(gameObject);
+        transform.position += Vector3.left * speed * Time.deltaTime;
+        transform.Rotate(Vector3.up * torque * Time.deltaTime);
+        if (transform.position.x < 1f) Destroy(gameObject);
     }
-
-
 
     public void DestroyByHit()
     {
+        if (GameManager.Instance) GameManager.Instance.AddScore(scoreValue);
+
         if (deathParticleEffects)
         {
             var particleEffects = Instantiate(deathParticleEffects, transform.position, Quaternion.identity);
@@ -46,5 +46,5 @@ public class EnemyMover : MonoBehaviour
 
         Destroy(gameObject);
     }
-
 }
+

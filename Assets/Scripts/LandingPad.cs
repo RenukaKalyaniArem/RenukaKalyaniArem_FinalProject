@@ -7,16 +7,13 @@ public class LandingPad : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
-        {
-            if (landingEffect) landingEffect.Play();
+        if (!other.CompareTag("Player")) return;
 
-            AudioSource audio = GetComponent<AudioSource>();
-            if (audio && landingSound)
-                audio.PlayOneShot(landingSound);
+        if (landingEffect) landingEffect.Play();
+        var audio = GetComponent<AudioSource>();
+        if (audio && landingSound) audio.PlayOneShot(landingSound);
 
-            GameManager gm = FindAnyObjectByType<GameManager>();
-            if (gm) gm.LevelComplete();
-        }
+        var gm = GameManager.Instance != null ? GameManager.Instance : FindAnyObjectByType<GameManager>();
+        if (gm) gm.OnShipLanded();
     }
 }

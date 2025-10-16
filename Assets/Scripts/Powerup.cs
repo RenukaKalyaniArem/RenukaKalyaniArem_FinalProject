@@ -31,7 +31,7 @@ public class Powerup : MonoBehaviour
                 StartCoroutine(GrantMultiMissile(player));
                 break;
             case PowerupType.Shield:
-                StartCoroutine(GrantShield(player));
+                player.GrantShield(10f);
                 break;
             case PowerupType.ExtraLife:
                 GameManager gm = FindAnyObjectByType<GameManager>();
@@ -92,12 +92,5 @@ public class Powerup : MonoBehaviour
     }
 
 
-    IEnumerator GrantShield(PlayerController player)
-    {
-        float duration = 10f;
-        player.ActivateShield(true);
-        yield return new WaitForSeconds(duration);
-        player.ActivateShield(false);
-    }
+   
 }
-    

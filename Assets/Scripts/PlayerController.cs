@@ -50,6 +50,7 @@ public class PlayerController : MonoBehaviour
     public ParticleSystem shieldActivateVFX; // one-shot burst on enable
     public ParticleSystem shieldLoopVFX;     // continuous particle effects attached to shield Visual
 
+    private Coroutine shieldCoroutine;
 
 
     void Awake()
@@ -252,16 +253,32 @@ public class PlayerController : MonoBehaviour
         else if (other.CompareTag("LandingPad"))
         {
             AudioAndParticle.Instance.PlayImpactAt(transform.position);
-            gameManager.GameOver("Landed");
+            gameManager.OnShipLanded(); 
         }
+        
     }
 
     void DestroyPlayerSequence()
     {
         AudioAndParticle.Instance.PlayExplosionAt(transform.position);
         Destroy(gameObject);
-        gameManager.GameOver("PlayerDestroyed");
+        gameManager.OnPlayerDestroyed();
     }
+
+    public void GrantShield(float duration) {
+        if (shieldCoroutine != null) {
+            StopCoroutine(shieldCoroutine);
+        }
+        shieldCoroutine = StartCoroutine(ShieldRoutine(duration));
+    }
+
+    private IEnumerator ShieldRoutine(float duration) {
+        ActivateShield(true);
+        yield return new WaitForSeconds(duration);
+        ActivateShield(false);
+        shieldCoroutine = null;
+    }
+
 }
 
     
