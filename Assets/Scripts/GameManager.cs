@@ -6,8 +6,9 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance;
     public int startingLives = 5;
     public int currentLives;
-    public int score; 
+    public int score;
     public string firstLevelSceneName = "Level1";
+    public int firstLevelBuildIndex = 1;
     public UIManager ui; 
     public bool isPaused = false;
 
@@ -26,6 +27,7 @@ public class GameManager : MonoBehaviour
 
         if (ui == null) ui = FindAnyObjectByType<UIManager>();
         UpdateHUD();
+        UpdateLevelHUD(); 
 
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
@@ -33,6 +35,7 @@ public class GameManager : MonoBehaviour
     {
         if (ui == null) ui = FindAnyObjectByType<UIManager>();
         UpdateHUD();
+        UpdateLevelHUD(); 
         Resume();
     }
     void UpdateHUD()
@@ -43,6 +46,19 @@ public class GameManager : MonoBehaviour
             ui.SetScore(score);
         }
     }
+    void UpdateLevelHUD()
+    {
+        if (ui == null) return;
+        int idx = SceneManager.GetActiveScene().buildIndex;
+        if (idx < firstLevelBuildIndex)
+        {
+            ui.SetLevelLabel(""); // hides level text on menus
+            return;
+        }
+        int levelNumber = (idx - firstLevelBuildIndex) + 1;
+        ui.SetLevelLabel("Level: " + levelNumber);
+    }
+
     public void ChangeLives(int delta)
     {
         currentLives = Mathf.Max(0, currentLives + delta);
@@ -55,12 +71,15 @@ public class GameManager : MonoBehaviour
     public void AddScore(int points)
     {
         score = Mathf.Max(0, score + points);
-        UpdateHUD();
+        if (ui) ui.SetScore(score);
+      
     }
     public void StartGame()
     {
         score = 0;
         currentLives = startingLives;
+        UpdateHUD();              
+        UpdateLevelHUD(); 
         Resume();
         SceneManager.LoadScene(firstLevelSceneName);
     }

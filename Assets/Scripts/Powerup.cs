@@ -44,53 +44,43 @@ public class Powerup : MonoBehaviour
     }
 
     IEnumerator GrantMultiMissile(PlayerController player)
+{
+    float duration = 1f;
+    float fireInterval = 1f;
+    float fovDegrees = 300f;
+    float endTime = Time.time + duration;
+    float cosThresh = Mathf.Cos(fovDegrees * 0.5f * Mathf.Deg2Rad);
+
+    var sp = FindAnyObjectByType<SpawnManager>();
+
+    while (Time.time < endTime)
     {
-        float duration = 10f;
-        float fireInterval = 1f;
-        float fovDegrees = 200f; 
-        float endTime = Time.time + duration;
-        float cosThresh = Mathf.Cos((fovDegrees * 0.5f) * Mathf.Deg2Rad);
-        var sp = FindAnyObjectByType<SpawnManager>();
+        var enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        int spawnIdx = 0;
 
-        while (Time.time < endTime)
+        foreach (var e in enemies)
         {
-            var enemies = GameObject.FindGameObjectsWithTag("Enemy");
+            Vector3 toEnemy = (e.transform.position - player.transform.position).normalized;
+            float dot = Vector3.Dot(player.transform.forward, toEnemy);
+            bool ahead = (dot > cosThresh) && (e.transform.position.x >= player.transform.position.x);
 
-            var front = new List<Transform>();
-            foreach (var e in enemies)
+            if (ahead)
             {
-                var toEnemy = (e.transform.position - player.transform.position).normalized;
-                float dot = Vector3.Dot(player.transform.forward, toEnemy);
-                bool ahead = dot > cosThresh && e.transform.position.x >= player.transform.position.x;
-                if (ahead) front.Add(e.transform);
-            }
-
-            if (front.Count > 0)
-            {
-
-                front.Sort((a, b) =>
-                    Vector3.Distance(player.transform.position, a.position)
-                    .CompareTo(Vector3.Distance(player.transform.position, b.position)));
-
-                for (int i = 0; i < player.missileSpawnPoints.Length; i++)
-                {
-                    Transform point = player.missileSpawnPoints[i];
-                    Transform tgt = front[i % front.Count];
-
-                    Quaternion lookRot = Quaternion.LookRotation((tgt.position - point.position).normalized);
-                    GameObject hmObj = Instantiate(sp.homingMissilePrefab, point.position, lookRot);
-                    var hm = hmObj.GetComponent<HomingMissile>();
-                    if (hm) hm.target = tgt;
-                }
+                // Launch missile from current spawn point
+                Transform point = player.missileSpawnPoints[spawnIdx % player.missileSpawnPoints.Length];
+                Quaternion lookRot = Quaternion.LookRotation((e.transform.position - point.position).normalized);
+                GameObject hmObj = Instantiate(sp.homingMissilePrefab, point.position, lookRot);
+                var hm = hmObj.GetComponent<HomingMissile>();
+                if (hm) hm.target = e.transform;
 
                 if (sp.multiMissileSFX)
                     AudioAndParticle.Instance.PlayClipAt(sp.multiMissileSFX, player.transform.position);
+
+                spawnIdx++; // Cycle through spawn points
             }
-
-            yield return new WaitForSeconds(fireInterval);
         }
+
+        yield return new WaitForSeconds(fireInterval);
     }
-
-
-   
+}
 }

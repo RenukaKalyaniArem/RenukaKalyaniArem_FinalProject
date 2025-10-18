@@ -12,6 +12,7 @@ public class UIManager : MonoBehaviour
     public GameObject hudPanel;
     public TMP_Text livesText;
     public TMP_Text scoreText;
+    public TMP_Text levelText;
 
     public GameObject successPanel;
     public TMP_Text successMessageText;
@@ -59,6 +60,10 @@ public class UIManager : MonoBehaviour
     public void SetScore(int score)
     {
         if (scoreText) scoreText.text = "Score: " + score;
+    }
+    public void SetLevelLabel(string label)
+    {
+        if (levelText) levelText.text = label;
     }
 
     public void ShowSuccessfulLanding(string msg)

@@ -14,13 +14,14 @@ GameObject:
   - component: {fileID: 6401353398899193708}
   - component: {fileID: 5238429318460355883}
   - component: {fileID: -4852417519930388916}
+  - component: {fileID: 4448341885222230186}
   m_Layer: 0
   m_Name: Landing pad
   m_TagString: LandingPad
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &-8679921383154817045
 Transform:
   m_ObjectHideFlags: 0
@@ -136,8 +137,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.8465505, y: 2.542896, z: 3.9205055}
-  m_Center: {x: 0.087677956, y: -0.3477714, z: 0.004131317}
+  m_Size: {x: 3.76077, y: 2.4560335, z: 3.812638}
+  m_Center: {x: 0.13056813, y: -0.39120293, z: 0.058065034}
 --- !u!114 &-4852417519930388916
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -152,6 +153,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   landingEffect: {fileID: 5490131966823159779}
   landingSound: {fileID: 8300000, guid: ab1a1560ed105dc40a24409c22a8c9d1, type: 3}
+--- !u!114 &4448341885222230186
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919132149155446097}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3c2490a2fcfa33418c02fed7da5ca17, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  landingPadRoot: {fileID: 919132149155446097}
+  autoByBuildIndex: 1
+  requiredScore: 100
+  level1Score: 100
+  level2Score: 300
+  level3Score: 500
 --- !u!1001 &6487836268128545774
 PrefabInstance:
   m_ObjectHideFlags: 0

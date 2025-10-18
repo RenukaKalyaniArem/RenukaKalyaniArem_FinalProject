@@ -82,7 +82,7 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space))
         {
             FireMissile();
-        } 
+        }
     }
 
     void HandleInput()
@@ -126,6 +126,7 @@ public class PlayerController : MonoBehaviour
         transform.position += Vector3.forward * horizontal * horizontalSpeed * Time.deltaTime;
 
     }
+ 
 
     void UpdateParticleEffectsAndSoundEffects()
     {

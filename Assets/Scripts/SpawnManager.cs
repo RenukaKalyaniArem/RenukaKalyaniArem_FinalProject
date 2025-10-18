@@ -48,7 +48,7 @@ public class SpawnManager : MonoBehaviour
                 Random.Range(enemyZRange.x, enemyZRange.y)
             );
 
-            Instantiate(prefab, pos, Quaternion.identity);
+            Instantiate(prefab, pos, prefab.transform.rotation);
 
             yield return new WaitForSeconds(enemySpawnInterval);
         }

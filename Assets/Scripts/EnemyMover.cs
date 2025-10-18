@@ -25,7 +25,10 @@ public class EnemyMover : MonoBehaviour
 
     public void DestroyByHit()
     {
-        if (GameManager.Instance) GameManager.Instance.AddScore(scoreValue);
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.AddScore(scoreValue);
+        } 
 
         if (deathParticleEffects)
         {
