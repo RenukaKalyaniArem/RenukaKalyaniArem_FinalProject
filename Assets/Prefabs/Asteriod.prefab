@@ -122,10 +122,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33d5d8a1605f95b42aeb303f2c35820d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 8
+  speed: 15
   torque: 20
-  deathVFX: {fileID: 4596544553357837919, guid: 8eb503696b886e04faff8fc0f480d473, type: 3}
-  deathSFX: {fileID: 8300000, guid: 1fd31868d68903d4f9e2c4a3b7ef98f3, type: 3}
+  deathParticleEffects: {fileID: 0}
+  deathSoundEffects: {fileID: 0}
+  scoreValue: 10
 --- !u!135 &8584362272039164179
 SphereCollider:
   m_ObjectHideFlags: 0

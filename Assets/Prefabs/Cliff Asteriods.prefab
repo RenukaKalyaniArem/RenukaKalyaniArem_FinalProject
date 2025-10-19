@@ -39177,8 +39177,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33d5d8a1605f95b42aeb303f2c35820d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 8
+  speed: 10
   torque: 0
   deathParticleEffects: {fileID: 484368387861551534}
   deathSoundEffects: {fileID: 0}
-  scoreValue: 30
+  scoreValue: 40

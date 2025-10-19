@@ -8,6 +8,7 @@ public class UIManager : MonoBehaviour
     public TMP_Text titleText;
     public Button playLevel1Button;
     public TMP_Text instructionsText;
+    public TMP_Text gamePlayInstructionsText;
 
     public GameObject hudPanel;
     public TMP_Text livesText;
@@ -26,6 +27,7 @@ public class UIManager : MonoBehaviour
     public TMP_Text completeMessageText;
     public Button playFromLevel1Button;
     public TMP_Text totalScoreText; 
+    public GameObject pausePanel; // Added for pause functionality
 
     void Start()
     {
@@ -97,7 +99,18 @@ public class UIManager : MonoBehaviour
         if (GameManager.Instance) GameManager.Instance.ContinueNextLevel(); 
     }
     public void OnClickRetry()             { if (GameManager.Instance) GameManager.Instance.RetryLevel(); }
-    public void OnClickStartFromLevel1()   { if (GameManager.Instance) GameManager.Instance.StartFromLevel1(); }
+    public void OnClickStartFromLevel1() { if (GameManager.Instance) GameManager.Instance.StartFromLevel1(); }
+    
+    public void ShowPausePanel()
+    {
+        if (pausePanel) pausePanel.SetActive(true);
+    }
+
+    public void HidePausePanel()
+    {
+        if (pausePanel) pausePanel.SetActive(false);
+    }
+
 }
 
 

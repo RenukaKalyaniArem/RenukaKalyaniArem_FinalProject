@@ -1,151 +1,122 @@
 using UnityEngine;
 using System.Collections;
-using UnityEngine.UI;
-using System.Collections.Generic;
+
 
 public class PlayerController : MonoBehaviour
 {
     public float upDownSpeed = 8f;
     public float forwardSpeed = 20f;
     public float horizontalSpeed = 10f;
-    public float rotateSpeed = 120f; // degrees per second while tilting
-    public float maxTilty = 45f; // degrees
 
-    public Vector2 xRange = new Vector2(0f, 300f);
-    public Vector2 yRange = new Vector2(5f, 50f);
-
+     public float xMin = 0f;
+    public float xMax = 300f;
+    public float yMin = 5f;
+    public float yMax = 50f;
+    public float zRange = 50f;
 
     public GameObject missilePrefab;
-
     public Transform[] missileSpawnPoints;
-
     public float missileCooldown = 0.25f;
 
-
+     public AudioSource movementAudioSource;
+    public AudioSource firingAudioSource;
     public AudioClip moveUpDownSound;
     public AudioClip forwardSound;
     public AudioClip horizontalSound;
-    public AudioClip rotateSound;
     public AudioClip missileSound;
     public ParticleSystem upDownParticles;
     public ParticleSystem forwardParticles;
     public ParticleSystem horizontalParticles;
-    public ParticleSystem rotateParticles;
 
-    public GameObject shieldVisual; // enable/disable
-
+    public GameObject shieldVisual;
     public bool multiMissileActive = false;
-
-    Rigidbody rb;
-    private float lastMissileTime = 0f;
-
-
-    private bool isRotating = false;
     public bool shieldActive = false;
+    public ParticleSystem shieldActivateVFX;
+    public ParticleSystem shieldLoopVFX;
 
-    public AudioSource audioSource;
-
+    private Rigidbody rb;
+    private float lastMissileTime = 0f;
     private GameManager gameManager;
-     
-    private float currentYaw = 0f;   // Relative yaw from initial orientation
-    private float initialYaw = 0f;   // Player starting yaw
-
-    public ParticleSystem shieldActivateVFX; // one-shot burst on enable
-    public ParticleSystem shieldLoopVFX;     // continuous particle effects attached to shield Visual
-
     private Coroutine shieldCoroutine;
+    public bool controlsEnabled = true;
 
 
-    void Awake()
+    // Ensures movement and firing audio sources exists and finds GameManager
+    // Sets shield active to false
+    void Awake() 
     {
         rb = GetComponent<Rigidbody>();
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-        }
-        gameManager = FindAnyObjectByType<GameManager>();
-        if (shieldVisual)
-        {
-            shieldVisual.SetActive(false);
-        }
-        initialYaw = transform.eulerAngles.y;
 
+        if (movementAudioSource == null)
+            movementAudioSource = gameObject.AddComponent<AudioSource>();
+
+        if (firingAudioSource == null)
+            firingAudioSource = gameObject.AddComponent<AudioSource>();
+
+        gameManager = FindAnyObjectByType<GameManager>();
+
+        if (shieldVisual)
+            shieldVisual.SetActive(false);
     }
 
+    // Checks for player controls
     void Update()
     {
-        if (!gameManager || gameManager.currentLives <= 0) return;
-        HandleInput();
+        if (!controlsEnabled || !gameManager || gameManager.currentLives <= 0)
+            return;
+
+        HandleMovement();
         ClampPosition();
         UpdateParticleEffectsAndSoundEffects();
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
+
+        if (Input.GetKey(KeyCode.Space))
             FireMissile();
-        }
     }
 
-    void HandleInput()
+    void HandleMovement()
     {
-        // For Up/down movement
-        float vertical = 0f;
-        if (Input.GetKey(KeyCode.W)) vertical = 1f;
-        if (Input.GetKey(KeyCode.S)) vertical = -1f;
-        transform.position += Vector3.up * vertical * upDownSpeed * Time.deltaTime;
+        float moveX = 0f; // Forward/Backward (X-axis)
+        float moveY = 0f; // Up/Down (Y-axis)
+        float moveZ = 0f; // Horizontal (Z-axis)
 
-        // For Left/right rotation (yaw around Y)
-        float turn = 0f;
-        if (Input.GetKey(KeyCode.A)) turn = -1f;
-        if (Input.GetKey(KeyCode.D)) turn = 1f;
+        // Forward/Backward (X)
+        if (Input.GetKey(KeyCode.W)) moveX = 1f;
+        if (Input.GetKey(KeyCode.S)) moveX = -1f;
 
-        if (Mathf.Abs(turn) > 0.01f)
-        {
-            isRotating = true;
-            currentYaw += turn * rotateSpeed * Time.deltaTime;
-            currentYaw = Mathf.Clamp(currentYaw, -maxTilty, maxTilty);
-        }
-        else
-        {
-            // Return yaw smoothly to 0
-            currentYaw = Mathf.MoveTowards(currentYaw, 0f, rotateSpeed * Time.deltaTime);
-            isRotating = Mathf.Abs(currentYaw) > 0.01f;
-        }
+        // Up/Down (Y)
+        if (Input.GetKey(KeyCode.UpArrow)) moveY = 1f;
+        if (Input.GetKey(KeyCode.DownArrow)) moveY = -1f;
 
-        // Apply rotation relative to initial orientation
-        transform.rotation = Quaternion.Euler(0f, initialYaw + currentYaw, 0f);
+        // Left/Right (Z)
+        if (Input.GetKey(KeyCode.LeftArrow)) moveZ = 1f;
+        if (Input.GetKey(KeyCode.RightArrow)) moveZ = -1f;
 
-        //For Forward movement along +X, only if not rotating
-        if (Input.GetKey(KeyCode.UpArrow))
-        {
-            transform.position += Vector3.right * forwardSpeed * Time.deltaTime;
-        }
-        // For Left/Right movement along Z axis
-        float horizontal = 0f;
-        if (Input.GetKey(KeyCode.RightArrow)) horizontal = -1f;
-        if (Input.GetKey(KeyCode.LeftArrow)) horizontal = 1f;
-        transform.position += Vector3.forward * horizontal * horizontalSpeed * Time.deltaTime;
+        Vector3 movement = new Vector3(
+            moveX * forwardSpeed,
+            moveY * upDownSpeed,
+            moveZ * horizontalSpeed
+        ) * Time.deltaTime;
 
+        transform.position += movement;
     }
- 
 
     void UpdateParticleEffectsAndSoundEffects()
     {
-        bool movingUpDown = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.S);
-        bool movingForward = Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W); 
+        bool movingForwardBackward = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.S);
+        bool movingUpDown = Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow);
         bool movingHorizontal = Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.RightArrow);
-        bool rotating = isRotating; 
 
+        // --- Particle Effects ---
+        if (forwardParticles)
+        {
+            if (movingForwardBackward && !forwardParticles.isPlaying) forwardParticles.Play();
+            if (!movingForwardBackward && forwardParticles.isPlaying) forwardParticles.Stop();
+        }
 
         if (upDownParticles)
         {
             if (movingUpDown && !upDownParticles.isPlaying) upDownParticles.Play();
             if (!movingUpDown && upDownParticles.isPlaying) upDownParticles.Stop();
-        }
-
-        if (forwardParticles)
-        {
-            if (movingForward && !forwardParticles.isPlaying) forwardParticles.Play();
-            if (!movingForward && forwardParticles.isPlaying) forwardParticles.Stop();
         }
 
         if (horizontalParticles)
@@ -154,35 +125,56 @@ public class PlayerController : MonoBehaviour
             if (!movingHorizontal && horizontalParticles.isPlaying) horizontalParticles.Stop();
         }
 
-        if (rotateParticles)
+        // --- Audio Logic ---
+        if (movingForwardBackward)
         {
-            if (rotating && !rotateParticles.isPlaying) rotateParticles.Play();
-            if (!rotating && rotateParticles.isPlaying) rotateParticles.Stop();
+            if (movementAudioSource.clip != forwardSound)
+            {
+                movementAudioSource.Stop();
+                movementAudioSource.clip = forwardSound;
+                movementAudioSource.loop = true;
+                movementAudioSource.Play();
+            }
         }
-  
-        if (movingUpDown && moveUpDownSound != null && !audioSource.isPlaying)
-            audioSource.PlayOneShot(moveUpDownSound);
-        if (movingForward && forwardSound != null && !audioSource.isPlaying)
-            audioSource.PlayOneShot(forwardSound);
-        if (movingHorizontal && horizontalSound != null && !audioSource.isPlaying)
-            audioSource.PlayOneShot(horizontalSound);
-        if (rotating && rotateSound != null && !audioSource.isPlaying)
-            audioSource.PlayOneShot(rotateSound);
+        else if (movingUpDown)
+        {
+            if (movementAudioSource.clip != moveUpDownSound)
+            {
+                movementAudioSource.Stop();
+                movementAudioSource.clip = moveUpDownSound;
+                movementAudioSource.loop = true;
+                movementAudioSource.Play();
+            }
+        }
+        else if (movingHorizontal)
+        {
+            if (movementAudioSource.clip != horizontalSound)
+            {
+                movementAudioSource.Stop();
+                movementAudioSource.clip = horizontalSound;
+                movementAudioSource.loop = true;
+                movementAudioSource.Play();
+            }
+        }
+        else
+        {
+            if (movementAudioSource.isPlaying)
+            {
+                movementAudioSource.Stop();
+                movementAudioSource.clip = null;
+            }
+        }
     }
-
-
 
     void ClampPosition()
     {
-
         Vector3 p = transform.position;
-        p.x = Mathf.Clamp(p.x, xRange.x, xRange.y); 
-        p.y = Mathf.Clamp(p.y, yRange.x, yRange.y); 
-        p.z = Mathf.Clamp(p.z, -50f, 50f);         
+        p.x = Mathf.Clamp(p.x, xMin, xMax); // forward/backward
+        p.y = Mathf.Clamp(p.y, yMin, yMax); // vertical
+        p.z = Mathf.Clamp(p.z, -zRange, zRange); // horizontal
         transform.position = p;
-
-
     }
+
     void FireMissile()
     {
         if (missilePrefab == null || missileSpawnPoints.Length == 0) return;
@@ -193,9 +185,7 @@ public class PlayerController : MonoBehaviour
         if (multiMissileActive)
         {
             foreach (Transform point in missileSpawnPoints)
-            {
                 InstantiateMissile(point);
-            }
         }
         else
         {
@@ -203,24 +193,18 @@ public class PlayerController : MonoBehaviour
         }
 
         if (missileSound != null)
-            audioSource.PlayOneShot(missileSound);
+            firingAudioSource.PlayOneShot(missileSound);
     }
 
     void InstantiateMissile(Transform point)
     {
         if (missilePrefab == null) return;
 
-        // Instantiate missile at spawn point
         GameObject m = Instantiate(missilePrefab, point.position, point.rotation);
-
-
         Rigidbody rbMissile = m.GetComponent<Rigidbody>();
         if (rbMissile != null)
-        {
-            rbMissile.linearVelocity = transform.forward * 60f; 
-        }
+            rbMissile.linearVelocity = transform.forward * 60f;
     }
-
 
     public void ActivateShield(bool on)
     {
@@ -251,19 +235,15 @@ public class PlayerController : MonoBehaviour
             EnemyMover e = other.GetComponent<EnemyMover>();
             if (shieldActive)
             {
-
                 if (e) e.DestroyByHit();
             }
             else
             {
-
                 gameManager.ChangeLives(-1);
                 if (e) e.DestroyByHit();
 
                 if (gameManager.currentLives < 1)
-                {
                     DestroyPlayerSequence();
-                }
             }
         }
         else if (other.CompareTag("Powerup"))
@@ -274,9 +254,8 @@ public class PlayerController : MonoBehaviour
         else if (other.CompareTag("LandingPad"))
         {
             AudioAndParticle.Instance.PlayImpactAt(transform.position);
-            gameManager.OnShipLanded(); 
+            gameManager.OnShipLanded();
         }
-        
     }
 
     void DestroyPlayerSequence()
@@ -286,20 +265,35 @@ public class PlayerController : MonoBehaviour
         gameManager.OnPlayerDestroyed();
     }
 
-    public void GrantShield(float duration) {
-        if (shieldCoroutine != null) {
+    public void GrantShield(float duration)
+    {
+        if (shieldCoroutine != null)
             StopCoroutine(shieldCoroutine);
-        }
+
         shieldCoroutine = StartCoroutine(ShieldRoutine(duration));
     }
 
-    private IEnumerator ShieldRoutine(float duration) {
+    private IEnumerator ShieldRoutine(float duration)
+    {
         ActivateShield(true);
         yield return new WaitForSeconds(duration);
         ActivateShield(false);
         shieldCoroutine = null;
     }
 
-}
+    public void FreezeMovement(float duration)
+    {
+        StartCoroutine(FreezeRoutine(duration));
+    }
 
-    
+    private IEnumerator FreezeRoutine(float duration)
+    {
+        controlsEnabled = false;
+        yield return new WaitForSecondsRealtime(duration);
+    }
+
+    public void SetControlsEnabled(bool enabled)
+    {
+        controlsEnabled = enabled;
+    }
+}

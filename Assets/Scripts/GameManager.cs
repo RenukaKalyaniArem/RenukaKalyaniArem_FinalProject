@@ -3,18 +3,19 @@ using UnityEngine.SceneManagement;
 using System.Collections;
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instance;
+    public static GameManager Instance; 
     public int startingLives = 5;
     public int currentLives;
     public int score;
     public string firstLevelSceneName = "Level1";
     public int firstLevelBuildIndex = 1;
-    public UIManager ui; 
+    public UIManager ui;
     public bool isPaused = false;
+    public bool isGameEnded = false;
 
-    void Awake()
+    void Awake() 
     {
-        if (Instance != null && Instance != this)
+        if (Instance != null && Instance != this) 
          {
             Destroy(gameObject);
             return;
@@ -76,6 +77,7 @@ public class GameManager : MonoBehaviour
     }
     public void StartGame()
     {
+        isGameEnded = false;
         score = 0;
         currentLives = startingLives;
         UpdateHUD();              
@@ -86,20 +88,29 @@ public class GameManager : MonoBehaviour
 
     public void OnPlayerDestroyed()
     {
+        isGameEnded = true;
         StopSpawning();
-        Pause();
-        if (ui) ui.ShowDestroyed("Spaceship Destroyed");
+        Resume();
+        if (ui) {
+        ui.HidePausePanel(); 
+        ui.ShowDestroyed("Spaceship Destroyed");
+        }
     }
     public void OnShipLanded()
     {
+        isGameEnded = true;
         StopSpawning();
-
+        var ship = FindAnyObjectByType<PlayerController>();
+        if (ship != null)
+        {
+            ship.FreezeMovement(2f); // Freeze controls for 2 seconds
+            StartCoroutine(FreezeCompletelyAfterDelay(ship, 2f)); // Keep frozen after 2s and until next level
+        }
         int current = SceneManager.GetActiveScene().buildIndex;
         int total = SceneManager.sceneCountInBuildSettings;
         bool lastLevel = (current + 1 >= total);
 
-        // Pause to display appropriate panel
-        Pause();
+        Resume();
         StartCoroutine(ShowPanelAfterDelay(lastLevel));
     }
     IEnumerator ShowPanelAfterDelay(bool lastLevel)
@@ -118,30 +129,46 @@ public class GameManager : MonoBehaviour
             }
         }
     }
-    public void ContinueNextLevel()
+
+    private IEnumerator FreezeCompletelyAfterDelay(PlayerController ship, float delay) // NEW
     {
+        yield return new WaitForSecondsRealtime(delay);
+        if (ship != null)
+            ship.SetControlsEnabled(false); // Remain frozen until next scene/retry
+    }
+
+    public void ContinueNextLevel() {
+        isGameEnded = false;
         Resume();
+        var ship = FindAnyObjectByType<PlayerController>();
+        if (ship != null)
+            ship.SetControlsEnabled(true); // UNFREEZE controls for next game
         int current = SceneManager.GetActiveScene().buildIndex;
         int total = SceneManager.sceneCountInBuildSettings;
-        if (current + 1 < total)
-        {
+        if (current + 1 < total) {
             SceneManager.LoadScene(current + 1);
-        }
-        else
-        {
+        } else {
             OnShipLanded();
         }
     }
-    public void RetryLevel()
+    public void RetryLevel() 
     {
+        isGameEnded = false;
         Resume();
-        currentLives = startingLives; // Reset lives for a clean game retry
+        var ship = FindAnyObjectByType<PlayerController>();
+        if (ship != null)
+            ship.SetControlsEnabled(true); // UNFREEZE controls for retry
+        currentLives = startingLives;
         UpdateHUD();
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
-    public void StartFromLevel1()
+    public void StartFromLevel1() 
     {
+        isGameEnded = false;
         Resume();
+        var ship = FindAnyObjectByType<PlayerController>();
+        if (ship != null)
+            ship.SetControlsEnabled(true); // UNFREEZE controls for restart
         score = 0;
         currentLives = startingLives;
         UpdateHUD();
@@ -157,13 +184,28 @@ public class GameManager : MonoBehaviour
     {
         isPaused = true;
         Time.timeScale = 0f;
+        if (ui) ui.ShowPausePanel();
     }
 
     void Resume()
     {
         isPaused = false;
         Time.timeScale = 1f;
+         if (ui) ui.HidePausePanel();
     }
+    void Update()
+    {
+        if (!isGameEnded && currentLives > 0) {
+            if (Input.GetKeyDown(KeyCode.Escape)) {
+                if (isPaused) {
+                    Resume();
+                } else {
+                    Pause();
+                }
+            }
+        }
+    }
+
 }
 
     
